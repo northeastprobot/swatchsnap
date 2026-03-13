@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
     // Use InstructPix2Pix — designed for "edit this image" instructions
     // image_guidance_scale controls how closely to follow the original image (higher = more faithful)
     const output = await replicate.run(
-      "timothybrooks/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810e",
+      "timothybrooks/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
       {
         input: {
           image: imageFileUrl,
