@@ -33,10 +33,32 @@ export default function PhotoUpload({
         return;
       }
 
+      // Compress image via canvas before storing (keeps payload under Vercel's 4MB limit)
       const reader = new FileReader();
       reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        onPhotoSelected(file, dataUrl);
+        const rawDataUrl = e.target?.result as string;
+        const img = new window.Image();
+        img.onload = () => {
+          const MAX_DIM = 1280;
+          let { width, height } = img;
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL("image/jpeg", 0.8);
+          onPhotoSelected(file, compressed);
+        };
+        img.src = rawDataUrl;
       };
       reader.readAsDataURL(file);
     },
