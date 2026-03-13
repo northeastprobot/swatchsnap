@@ -21,19 +21,19 @@ function buildPrompt(
   accentColor?: string,
   accentColorName?: string
 ): string {
-  let prompt = `Exterior house paint color visualization. Keep the EXACT same house — identical structure, architecture, roofline, windows, doors, porch, landscaping, and viewpoint. Do NOT change anything structural. ONLY change the paint colors as follows: all siding, body, and walls painted ${primaryColorName} color ${primaryColor}; all trim including soffits, fascia, window trim, door trim, and corner boards painted ${trimColorName} color ${trimColor};`;
+  let prompt = `Paint the house siding and walls ${primaryColorName}. Paint all trim, soffits, fascia, window frames, and door trim ${trimColorName}.`;
 
   if (accentColor && accentColorName) {
-    prompt += ` shutters, front door, and accent details painted ${accentColorName} color ${accentColor};`;
+    prompt += ` Paint the shutters and front door ${accentColorName}.`;
   }
 
-  prompt += ` photorealistic, professional architectural photography, natural daylight, sharp focus, Benjamin Moore paint colors, same house same composition.`;
+  prompt += ` Keep the exact same house, same structure, same roof, same windows, same landscaping. Only change the paint colors.`;
 
   return prompt;
 }
 
 function buildNegativePrompt(): string {
-  return "different house, new construction, renovated structure, changed architecture, different windows, different roof, different layout, moved landscaping, blurry, low quality, distorted, cartoon, illustration, unrealistic, oversaturated";
+  return "different house, changed structure, new roof, different windows, different landscaping, blurry, low quality, cartoon, illustration, unrealistic";
 }
 
 // Mock response for development without API key
@@ -107,20 +107,19 @@ export async function POST(req: NextRequest) {
     console.log("[SwatchSnap] Running Replicate img2img...");
     console.log("[SwatchSnap] Prompt:", prompt);
 
-    // Use stability-ai/stable-diffusion-img2img
-    // The model takes an image and transforms it based on the prompt
+    // Use InstructPix2Pix — designed for "edit this image" instructions
+    // image_guidance_scale controls how closely to follow the original image (higher = more faithful)
     const output = await replicate.run(
-      "stability-ai/stable-diffusion-img2img:15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d",
+      "timothybrooks/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810e",
       {
         input: {
           image: imageFileUrl,
           prompt: prompt,
           negative_prompt: negativePrompt,
-          prompt_strength: 0.6, // 0.6 = strong color change while preserving house structure
-          num_inference_steps: 30,
+          num_inference_steps: 50,
           guidance_scale: 7.5,
+          image_guidance_scale: 1.5, // 1.5 = strong image fidelity (structure preserved)
           num_outputs: 1,
-          scheduler: "K_EULER_ANCESTRAL",
         },
       }
     );
