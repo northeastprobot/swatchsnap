@@ -74,9 +74,10 @@ export async function POST(req: NextRequest) {
       return mockResponse(primaryColor, trimColor);
     }
 
-    const replicate = new Replicate({ auth: apiToken });
+    // Force upload strategy so Blobs are uploaded to Replicate CDN (not base64 encoded)
+    const replicate = new Replicate({ auth: apiToken, fileEncodingStrategy: "upload" });
 
-    // Convert base64 data URL to Blob, then upload to Replicate CDN to get a URL
+    // Convert base64 data URL to Blob
     const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
     if (!matches) {
       return NextResponse.json({ error: "Invalid image format" }, { status: 400 });
@@ -85,10 +86,6 @@ export async function POST(req: NextRequest) {
     const base64Data = matches[2];
     const imageBuffer = Buffer.from(base64Data, "base64");
     const imageBlob = new Blob([imageBuffer], { type: mimeType });
-
-    // Upload image to Replicate file hosting to get a URL
-    const uploadedFile = await replicate.files.create(imageBlob);
-    const imageUrl = uploadedFile.urls.get;
 
     const prompt = buildPrompt(
       primaryColor,
@@ -110,7 +107,7 @@ export async function POST(req: NextRequest) {
       "stability-ai/stable-diffusion-img2img:15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d",
       {
         input: {
-          image: imageUrl,
+          image: imageBlob,
           prompt: prompt,
           negative_prompt: negativePrompt,
           prompt_strength: 0.55, // Balance between original structure and color changes
