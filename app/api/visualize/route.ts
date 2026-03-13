@@ -76,9 +76,15 @@ export async function POST(req: NextRequest) {
 
     const replicate = new Replicate({ auth: apiToken });
 
-    // Convert base64 data URL to Buffer (Replicate requires a file, not a base64 string)
-    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    // Convert base64 data URL to Blob (Replicate requires a file object, not a base64 string)
+    const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
+    if (!matches) {
+      return NextResponse.json({ error: "Invalid image format" }, { status: 400 });
+    }
+    const mimeType = matches[1];
+    const base64Data = matches[2];
     const imageBuffer = Buffer.from(base64Data, "base64");
+    const imageBlob = new Blob([imageBuffer], { type: mimeType });
 
     const prompt = buildPrompt(
       primaryColor,
@@ -100,7 +106,7 @@ export async function POST(req: NextRequest) {
       "stability-ai/stable-diffusion-img2img:15a3689ee13b0d2616e98820eca31d4af4a716cef1f9e584ef5b636fcacbc26a",
       {
         input: {
-          image: imageBuffer,
+          image: imageBlob,
           prompt: prompt,
           negative_prompt: negativePrompt,
           prompt_strength: 0.55, // Balance between original structure and color changes
