@@ -21,13 +21,15 @@ function buildPrompt(
   accentColor?: string,
   accentColorName?: string
 ): string {
-  let prompt = `Paint the house siding and walls ${primaryColorName}. Paint all trim, soffits, fascia, window frames, and door trim ${trimColorName}.`;
+  let prompt = `Change only the paint colors on this house. Paint the main siding and body of the house ${primaryColorName}. Paint the trim, window frames, soffits, fascia, and corner boards ${trimColorName}.`;
 
   if (accentColor && accentColorName) {
-    prompt += ` Paint the shutters and front door ${accentColorName}.`;
+    prompt += ` Paint only the shutters and front door ${accentColorName}.`;
+  } else {
+    prompt += ` Leave the door and shutters their original color.`;
   }
 
-  prompt += ` Keep the exact same house, same structure, same roof, same windows, same landscaping. Only change the paint colors.`;
+  prompt += ` Do not change the roof, windows, landscaping, or structure. Same house, same photo, only the paint is different.`;
 
   return prompt;
 }
@@ -108,7 +110,8 @@ export async function POST(req: NextRequest) {
     console.log("[SwatchSnap] Prompt:", prompt);
 
     // Use InstructPix2Pix — designed for "edit this image" instructions
-    // image_guidance_scale controls how closely to follow the original image (higher = more faithful)
+    // image_guidance_scale: higher = more faithful to original structure/composition
+    // guidance_scale: higher = follows prompt more strictly
     const output = await replicate.run(
       "timothybrooks/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
       {
@@ -117,8 +120,8 @@ export async function POST(req: NextRequest) {
           prompt: prompt,
           negative_prompt: negativePrompt,
           num_inference_steps: 50,
-          guidance_scale: 7.5,
-          image_guidance_scale: 1.5, // 1.5 = strong image fidelity (structure preserved)
+          guidance_scale: 9,
+          image_guidance_scale: 2.0,
           num_outputs: 1,
         },
       }
