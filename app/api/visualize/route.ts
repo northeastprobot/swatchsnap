@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
           image: imageFileUrl,
           prompt: prompt,
           negative_prompt: negativePrompt,
-          prompt_strength: 0.55, // Balance between original structure and color changes
+          prompt_strength: 0.75, // Higher = more color change, lower = more structure preservation
           num_inference_steps: 30,
           guidance_scale: 7.5,
           num_outputs: 1,
