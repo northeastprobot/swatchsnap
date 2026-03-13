@@ -21,19 +21,19 @@ function buildPrompt(
   accentColor?: string,
   accentColorName?: string
 ): string {
-  let prompt = `Professional exterior house painting photograph. The house walls and siding are painted ${primaryColorName} (${primaryColor}). The trim, fascia, soffits, and window frames are painted ${trimColorName} (${trimColor}).`;
+  let prompt = `Exterior house paint color visualization. Keep the EXACT same house — identical structure, architecture, roofline, windows, doors, porch, landscaping, and viewpoint. Do NOT change anything structural. ONLY change the paint colors as follows: all siding, body, and walls painted ${primaryColorName} color ${primaryColor}; all trim including soffits, fascia, window trim, door trim, and corner boards painted ${trimColorName} color ${trimColor};`;
 
   if (accentColor && accentColorName) {
-    prompt += ` The front door and shutters are painted ${accentColorName} (${accentColor}).`;
+    prompt += ` shutters, front door, and accent details painted ${accentColorName} color ${accentColor};`;
   }
 
-  prompt += ` High quality, photorealistic, professional architectural photography, natural lighting, sharp details, Benjamin Moore paint colors.`;
+  prompt += ` photorealistic, professional architectural photography, natural daylight, sharp focus, Benjamin Moore paint colors, same house same composition.`;
 
   return prompt;
 }
 
 function buildNegativePrompt(): string {
-  return "blurry, low quality, distorted, unrealistic, cartoon, illustration, sketch, painting, oversaturated, weird colors, bad proportions";
+  return "different house, new construction, renovated structure, changed architecture, different windows, different roof, different layout, moved landscaping, blurry, low quality, distorted, cartoon, illustration, unrealistic, oversaturated";
 }
 
 // Mock response for development without API key
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
           image: imageFileUrl,
           prompt: prompt,
           negative_prompt: negativePrompt,
-          prompt_strength: 0.75, // Higher = more color change, lower = more structure preservation
+          prompt_strength: 0.6, // 0.6 = strong color change while preserving house structure
           num_inference_steps: 30,
           guidance_scale: 7.5,
           num_outputs: 1,
