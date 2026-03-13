@@ -76,6 +76,10 @@ export async function POST(req: NextRequest) {
 
     const replicate = new Replicate({ auth: apiToken });
 
+    // Convert base64 data URL to Buffer (Replicate requires a file, not a base64 string)
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    const imageBuffer = Buffer.from(base64Data, "base64");
+
     const prompt = buildPrompt(
       primaryColor,
       primaryColorName,
@@ -96,7 +100,7 @@ export async function POST(req: NextRequest) {
       "stability-ai/stable-diffusion-img2img:15a3689ee13b0d2616e98820eca31d4af4a716cef1f9e584ef5b636fcacbc26a",
       {
         input: {
-          image: image,
+          image: imageBuffer,
           prompt: prompt,
           negative_prompt: negativePrompt,
           prompt_strength: 0.55, // Balance between original structure and color changes
