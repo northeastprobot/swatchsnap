@@ -152,7 +152,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           {[
             { value: "500+", label: "BM Colors", sub: "Authentic library" },
-            { value: "AI", label: "Powered", sub: "gpt-image-1 model" },
+            { value: "AI", label: "Powered", sub: "Visualizer technology" },
             { value: "Free", label: "Always", sub: "No credit card" },
             { value: "60s", label: "Results", sub: "Instant preview" },
           ].map((stat) => (
@@ -312,7 +312,7 @@ export default function LandingPage() {
               {
                 icon: <Sparkles size={22} />,
                 title: "AI-Powered Realism",
-                desc: "OpenAI's gpt-image-1 model paints your actual home photo with photorealistic accuracy.",
+                desc: "Advanced visualization technology applies your chosen colors to your actual home photo with photorealistic accuracy.",
               },
               {
                 icon: <CheckCircle size={22} />,
