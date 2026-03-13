@@ -74,10 +74,9 @@ export async function POST(req: NextRequest) {
       return mockResponse(primaryColor, trimColor);
     }
 
-    // Force upload strategy so Blobs are uploaded to Replicate CDN (not base64 encoded)
-    const replicate = new Replicate({ auth: apiToken, fileEncodingStrategy: "upload" });
+    const replicate = new Replicate({ auth: apiToken });
 
-    // Convert base64 data URL to Blob
+    // Convert base64 data URL to Buffer and upload to Replicate to get a real URL
     const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
     if (!matches) {
       return NextResponse.json({ error: "Invalid image format" }, { status: 400 });
@@ -85,7 +84,14 @@ export async function POST(req: NextRequest) {
     const mimeType = matches[1];
     const base64Data = matches[2];
     const imageBuffer = Buffer.from(base64Data, "base64");
-    const imageBlob = new Blob([imageBuffer], { type: mimeType });
+
+    // Explicitly upload to Replicate Files API and extract the URL as a plain string
+    const uploadedFile = await replicate.files.create(imageBuffer);
+    const imageFileUrl: string = uploadedFile.urls?.get;
+    if (!imageFileUrl) {
+      throw new Error("Failed to upload image to Replicate");
+    }
+    console.log("[SwatchSnap] Uploaded image URL:", imageFileUrl);
 
     const prompt = buildPrompt(
       primaryColor,
@@ -107,7 +113,7 @@ export async function POST(req: NextRequest) {
       "stability-ai/stable-diffusion-img2img:15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d",
       {
         input: {
-          image: imageBlob,
+          image: imageFileUrl,
           prompt: prompt,
           negative_prompt: negativePrompt,
           prompt_strength: 0.55, // Balance between original structure and color changes
