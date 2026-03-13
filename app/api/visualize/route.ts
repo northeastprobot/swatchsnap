@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       return mockResponse(primaryColor, trimColor);
     }
 
-    const replicate = new Replicate({ auth: apiToken });
+    const replicate = new Replicate({ auth: apiToken, useFileOutput: false });
 
     // Convert base64 data URL to Buffer and upload to Replicate to get a real URL
     const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
