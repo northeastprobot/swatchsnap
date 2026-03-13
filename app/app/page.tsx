@@ -466,13 +466,15 @@ export default function AppPage() {
 
               {generatedImage && (
                 <>
-                  <button
-                    onClick={() => setShowLeadModal(true)}
+                  <a
+                    href="https://www.northeastproservices.com/request-an-estimate"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-full py-4 bg-[#f97316] hover:bg-[#ea6c0d] text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#f97316]/20"
                   >
                     Love it? Get a Free Professional Estimate
                     <ChevronRight size={18} />
-                  </button>
+                  </a>
                   <div className="flex gap-3">
                     <button
                       onClick={handleDownload}
