@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Replicate from "replicate";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 interface VisualizeRequest {
   image: string; // base64 data URL
