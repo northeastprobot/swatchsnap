@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     const replicate = new Replicate({ auth: apiToken });
 
-    // Convert base64 data URL to Blob (Replicate requires a file object, not a base64 string)
+    // Convert base64 data URL to Blob, then upload to Replicate CDN to get a URL
     const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
     if (!matches) {
       return NextResponse.json({ error: "Invalid image format" }, { status: 400 });
@@ -85,6 +85,10 @@ export async function POST(req: NextRequest) {
     const base64Data = matches[2];
     const imageBuffer = Buffer.from(base64Data, "base64");
     const imageBlob = new Blob([imageBuffer], { type: mimeType });
+
+    // Upload image to Replicate file hosting to get a URL
+    const uploadedFile = await replicate.files.create(imageBlob);
+    const imageUrl = uploadedFile.urls.get;
 
     const prompt = buildPrompt(
       primaryColor,
@@ -103,10 +107,10 @@ export async function POST(req: NextRequest) {
     // Use stability-ai/stable-diffusion-img2img
     // The model takes an image and transforms it based on the prompt
     const output = await replicate.run(
-      "stability-ai/stable-diffusion-img2img:15a3689ee13b0d2616e98820eca31d4af4a716cef1f9e584ef5b636fcacbc26a",
+      "stability-ai/stable-diffusion-img2img:15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d",
       {
         input: {
-          image: imageBlob,
+          image: imageUrl,
           prompt: prompt,
           negative_prompt: negativePrompt,
           prompt_strength: 0.55, // Balance between original structure and color changes
@@ -120,15 +124,15 @@ export async function POST(req: NextRequest) {
 
     // Output is an array of URLs
     const outputArray = output as string[];
-    const imageUrl = Array.isArray(outputArray) ? outputArray[0] : String(output);
+    const generatedUrl = Array.isArray(outputArray) ? outputArray[0] : String(output);
 
-    if (!imageUrl) {
+    if (!generatedUrl) {
       throw new Error("No image generated from Replicate");
     }
 
-    console.log("[SwatchSnap] Generated image:", imageUrl);
+    console.log("[SwatchSnap] Generated image:", generatedUrl);
 
-    return NextResponse.json({ imageUrl, mock: false });
+    return NextResponse.json({ imageUrl: generatedUrl, mock: false });
   } catch (err) {
     console.error("[SwatchSnap] Visualize error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
